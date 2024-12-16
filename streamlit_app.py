@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from app import *
+import requests
+import matplotlib.pyplot as plt
 
 
 st.set_page_config(layout="wide")
@@ -35,6 +37,13 @@ with col2:
 with col3:
     option2 = st.text_input("Amount: ")
 
+col6, col7, col8 = st.columns(3)
+
+with col6:
+    option4 = st.date_input("Invoice Date",format="DD/MM/YYYY")
+with col7:
+    option5 = st.text_input("Invoice Number")
+
 df9 = df1[df1['Broker'] == option].reset_index()
 
 st.write("Email: ")
@@ -43,7 +52,7 @@ st.write("Number: ")
 st.code(df9['Number'].iloc[0], language="markdown")
 
 if st.button("Submit",type="primary"):
-    data = pd.DataFrame([{"Broker":option,"Party":option1,"Amount":option2}])
+    data = pd.DataFrame([{"Broker":option,"Party":option1,"Amount":option2,"IDate":option4,"INumber":option5}])
     with pd.ExcelWriter('final.xlsx', engine='openpyxl', mode='a',if_sheet_exists='overlay') as writer:
         data.to_excel(writer, sheet_name='Sheet1', index=False, header=None, startrow= writer.sheets['Sheet1'].max_row)
     
@@ -78,3 +87,19 @@ with col4:
                 st.write("Sent Mail")
         else:
             st.write("Select from above")
+
+df2['Amount'] = df2['Amount'].astype('int')
+df20 = df2.groupby('Broker')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
+# df20['test'] = df20['Broker'] + " : " + df20['Amount'].astype(str)
+# # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+# labels = df20['Broker'].tolist()
+# sizes = df20['Amount'].tolist()
+# new_lendgent = df20['test'].tolist()
+
+
+# fig1, ax1 = plt.subplots()
+# ax1.pie(sizes, labels=labels, startangle=180)
+# ax1.legend(new_lendgent, loc='lower left', bbox_to_anchor=(-0.1, 1.),fontsize=8)
+
+# st.pyplot(fig1)
+st.dataframe(df20)

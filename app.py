@@ -2,11 +2,11 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 
-subject = "REQUEST FOR REFUND OUR CREDIT"
+subject = "Outstanding/OverDue Payment"
 body = """AMT- {}/-.
 
 Dear Sir, 
-             PLZ REFUND OUR CREDIT FROM {} AS SOON AS POSSIBLE.            
+             PLZ ARRANGE OUTSTANDING/SHORT/PENDING AMOUNT FROM {} AS SOON AS POSSIBLE.            
 
 Thanks & Regards,
 
