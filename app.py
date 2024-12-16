@@ -23,14 +23,16 @@ password = "eqgb zwtu nhjz pklb"
 
 context = ssl.create_default_context()
 
-def send_email(subject, amount1,party1, sender, recipients, password):
+def send_email(subject, amount1,party1, sender, recipient, password):
     msg = MIMEText(body.format(amount1,party1))
     msg['Subject'] = subject
     msg['From'] = sender
-    msg['To'] = ', '.join(recipients)
+    msg['To'] = ', '.join(recipient)
+    msg['cc'] = 'rakesh_agarwa@hotmail.com'
+    print(msg)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
        smtp_server.login(sender, password)
-       smtp_server.sendmail(sender, recipients, msg.as_string())
+       smtp_server.sendmail(sender, recipient + ['rakesh_agarwa@hotmail.com'], msg.as_bytes())
 
 
 # send_email(subject, body, sender, recipients, password)
