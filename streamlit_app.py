@@ -4,6 +4,7 @@ import numpy as np
 from app import *
 import requests
 import matplotlib.pyplot as plt
+from send_whatsapp import *
 
 
 st.set_page_config(layout="wide")
@@ -64,26 +65,41 @@ if st.button("Submit",type="primary"):
 st.header("PENDING LIST")
 
 df2['is_widget'] = False
-# column_configuration = {
-#     'Command': st.button('Send SMS')
-# }
-# st.data_editor(df2,column_config=column_configuration)
 
 edited_df = st.data_editor(df2,disabled=("Amount","Party","Broker"),use_container_width=True)
-# st.write(df2)
+
 
 col4, col5 = st.columns(2)
 
 with col5:
     if st.button("Send SMS",type="primary"):
-        st.write("Not Enabled")
+        edited_df2=edited_df[edited_df['is_widget'] == True].reset_index()
+        edited_df2['INumber'] = edited_df2['INumber'].fillna(0)
+        edited_df2['INumber'] = edited_df2['INumber'].astype(int)
+        if edited_df2.shape[0]:
+            for j in edited_df2['Broker'].unique().tolist():
+                edited_df3 = edited_df2[edited_df2['Broker'] == j].reset_index()
+                df11 = df1[df1['Broker'] == j].reset_index()
+                if df11['GroupID'].iloc[0]:
+                    if edited_df3.shape[0]:
+                        final_text_message = 'PLEASE CLEAR THE DUES \n\n'
+                        for l in range(0,edited_df3.shape[0]):
+                            if edited_df3['INumber'].astype(str).iloc[l] == 'nan' or edited_df3['INumber'].astype(str).iloc[l] == '0':
+                                final_text_message += edited_df3['Party'].iloc[l] +  "  "+ str(edited_df3['Amount'].iloc[l]) +"/- \n"
+                            else:
+                                final_text_message += edited_df3['Party'].iloc[l] + "  INV-"+edited_df3['INumber'].astype(str).iloc[l]+"  AMT-" +str(edited_df3['Amount'].iloc[l]) +"/-  Dt- " + edited_df3['IDate'].dt.strftime('%d-%m-%Y').iloc[l] + "\n"
+                        # print(final_text_message)
+                        send_payment_whatsapp(final_text_message,df11['GroupID'].iloc[0])
+        else:
+            st.write("Select from above")
 with col4:
     if st.button("Send Email",type="primary"):
         edited_df1=edited_df[edited_df['is_widget'] == True].reset_index()
         if edited_df1.shape[0]:
             for i in range(0,edited_df1.shape[0]):
                 df10 = df1[df1['Broker'] == edited_df1['Broker'].iloc[i]].reset_index()
-                send_email(subject,edited_df1['Amount'].iloc[i],edited_df1['Party'].iloc[i], sender, [df10['Email'].iloc[0]], password)
+                text_invoice = "" if edited_df1['IDate'].dt.strftime('%Y-%m-%d').iloc[i] == '' else "INV - <b>"+edited_df1['INumber'].astype(str).iloc[i] + "</b> Dt - <b>" + edited_df1['IDate'].dt.strftime('%Y-%m-%d').iloc[i] + "</b>"
+                send_email(subject,edited_df1['Amount'].iloc[i],edited_df1['Party'].iloc[i],text_invoice, sender, [df10['Email'].iloc[0]], password)
                 st.write("Sent Mail")
         else:
             st.write("Select from above")

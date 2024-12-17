@@ -1,19 +1,33 @@
 import smtplib
 import ssl
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 subject = "Outstanding/OverDue Payment"
-body = """AMT- {}/-.
-
-Dear Sir, 
-             PLZ ARRANGE OUTSTANDING/SHORT/PENDING AMOUNT FROM {} AS SOON AS POSSIBLE.            
-
+body = """<html>
+AMT- <b>{}</b> /-.
+<br>
+<br>
+<br>
+Dear Sir,
+<br>
+<br>
+             PLZ ARRANGE OUTSTANDING/SHORT/PENDING AMOUNT FROM <b>{}</b> {} AS SOON AS POSSIBLE.            
+<br>
+<br>
+<br>
 Thanks & Regards,
-
+<br>
+<br>
 NETAJI OIL DEPOT & GROUPS
+<br>
 GDM BRANCH: OFFICE NO. 208, 2ND FLOOR,
+<br>
 RIDDHI SIDDHI ARCADE II, PLOT NO. 40,
-SECTOR 8, GANDHIDHAM, KUTCH - 370201, GUJARAT, INDIA"""
+<br>
+SECTOR 8, GANDHIDHAM, KUTCH - 370201, GUJARAT, INDIA
+<br>
+</html>"""
 
 
 sender = "netajioildepotgandhidham@gmail.com"
@@ -23,8 +37,11 @@ password = "eqgb zwtu nhjz pklb"
 
 context = ssl.create_default_context()
 
-def send_email(subject, amount1,party1, sender, recipient, password):
-    msg = MIMEText(body.format(amount1,party1))
+def send_email(subject, amount1,party1,invoicedetails, sender, recipient, password):
+    msg = MIMEMultipart('alternative')
+    html = body.format(amount1,party1,invoicedetails)
+    part2 = MIMEText(html, 'html')
+    msg.attach(part2)
     msg['Subject'] = subject
     msg['From'] = sender
     msg['To'] = ', '.join(recipient)
