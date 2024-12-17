@@ -69,7 +69,7 @@ df2['is_widget'] = False
 edited_df = st.data_editor(df2,disabled=("Amount","Party","Broker"),use_container_width=True)
 
 
-col4, col5 = st.columns(2)
+col4, col5,col7 = st.columns(3)
 
 with col5:
     if st.button("Send SMS",type="primary"):
@@ -80,7 +80,8 @@ with col5:
             for j in edited_df2['Broker'].unique().tolist():
                 edited_df3 = edited_df2[edited_df2['Broker'] == j].reset_index()
                 df11 = df1[df1['Broker'] == j].reset_index()
-                if df11['GroupID'].iloc[0]:
+                df11['GroupID'] = df11['GroupID'].fillna('')
+                if df11['GroupID'].iloc[0] != '':
                     if edited_df3.shape[0]:
                         final_text_message = 'PLEASE CLEAR THE DUES \n\n'
                         for l in range(0,edited_df3.shape[0]):
@@ -90,8 +91,10 @@ with col5:
                                 final_text_message += edited_df3['Party'].iloc[l] + "  INV-"+edited_df3['INumber'].astype(str).iloc[l]+"  AMT-" +str(edited_df3['Amount'].iloc[l]) +"/-  Dt- " + edited_df3['IDate'].dt.strftime('%d-%m-%Y').iloc[l] + "\n"
                         # print(final_text_message)
                         send_payment_whatsapp(final_text_message,df11['GroupID'].iloc[0])
+                else:
+                    st.toast('Whatsapp Group not available for '+j, icon="⚠️")
         else:
-            st.write("Select from above")
+            st.toast('Please select from the list' , icon="⚠️")
 with col4:
     if st.button("Send Email",type="primary"):
         edited_df1=edited_df[edited_df['is_widget'] == True].reset_index()
@@ -102,10 +105,22 @@ with col4:
                 send_email(subject,edited_df1['Amount'].iloc[i],edited_df1['Party'].iloc[i],text_invoice, sender, [df10['Email'].iloc[0]], password)
                 st.write("Sent Mail")
         else:
-            st.write("Select from above")
+            st.toast('Please select from the list' , icon="⚠️")
+st.write("")
+with col7:
+    if st.button('Delete',type="primary"):
+        st.write("Deleted")
 
-df2['Amount'] = df2['Amount'].astype('int')
-df20 = df2.groupby('Broker')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
+
+col10, col11 = st.columns(2)
+with col10:
+    df2['Amount'] = df2['Amount'].astype('int')
+    df20 = df2.groupby('Broker')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
+    st.dataframe(df20,use_container_width=True)
+with col11:
+    df2['Amount'] = df2['Amount'].astype('int')
+    df22 = df2.groupby('Party')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
+    st.dataframe(df22,use_container_width=True)
 # df20['test'] = df20['Broker'] + " : " + df20['Amount'].astype(str)
 # # Pie chart, where the slices will be ordered and plotted counter-clockwise:
 # labels = df20['Broker'].tolist()
@@ -118,4 +133,3 @@ df20 = df2.groupby('Broker')['Amount'].sum().reset_index().sort_values('Amount',
 # ax1.legend(new_lendgent, loc='lower left', bbox_to_anchor=(-0.1, 1.),fontsize=8)
 
 # st.pyplot(fig1)
-st.dataframe(df20)
