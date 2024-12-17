@@ -5,7 +5,7 @@ from app import *
 import requests
 import matplotlib.pyplot as plt
 from send_whatsapp import *
-
+from openpyxl import load_workbook
 
 st.set_page_config(layout="wide")
 hide_github_icon = """
@@ -21,8 +21,14 @@ st.markdown(hide_github_icon, unsafe_allow_html=True)
 st.title("PAYMENT TAKADA")
 
 df1=pd.read_excel('list.xlsx')
-df2=pd.read_excel('final.xlsx')
 
+def call_list():
+    df_final=pd.read_excel('final.xlsx')
+    df2=df_final[df_final['is_done'] == 0].reset_index(drop=True)
+
+    return df_final,df2
+
+df_final,df2 = call_list()
 
 col1, col2, col3 = st.columns(3)
 
@@ -53,12 +59,11 @@ st.write("Number: ")
 st.code(df9['Number'].iloc[0], language="markdown")
 
 if st.button("Submit",type="primary"):
-    data = pd.DataFrame([{"Broker":option,"Party":option1,"Amount":option2,"IDate":option4,"INumber":option5}])
+    data = pd.DataFrame([{"ID":df_final.shape[0],"Broker":option,"Party":option1,"Amount":option2,"IDate":option4,"INumber":option5,"is_done":0}])
     with pd.ExcelWriter('final.xlsx', engine='openpyxl', mode='a',if_sheet_exists='overlay') as writer:
         data.to_excel(writer, sheet_name='Sheet1', index=False, header=None, startrow= writer.sheets['Sheet1'].max_row)
     
-    df2=pd.read_excel('final.xlsx')
-    # data.to_excel('final.xlsx',index = False, header= None,startrow=df2.shape[0]+1)
+    df_final,df2=call_list()
 
 
 
@@ -66,8 +71,8 @@ st.header("PENDING LIST")
 
 df2['is_widget'] = False
 
-edited_df = st.data_editor(df2,disabled=("Amount","Party","Broker"),use_container_width=True)
-
+edited_df = st.data_editor(df2,disabled=("ID","Broker","Party","Amount","IDate","INumber","is_done","is_widget"),
+                           column_order=("ID","Broker","Party","Amount","IDate","INumber","is_widget"),use_container_width=True)
 
 col4, col5,col7 = st.columns(3)
 
@@ -101,7 +106,7 @@ with col4:
         if edited_df1.shape[0]:
             for i in range(0,edited_df1.shape[0]):
                 df10 = df1[df1['Broker'] == edited_df1['Broker'].iloc[i]].reset_index()
-                text_invoice = "" if edited_df1['IDate'].dt.strftime('%Y-%m-%d').iloc[i] == '' else "INV - <b>"+edited_df1['INumber'].astype(str).iloc[i] + "</b> Dt - <b>" + edited_df1['IDate'].dt.strftime('%Y-%m-%d').iloc[i] + "</b>"
+                text_invoice = "" if edited_df1['IDate'].dt.strftime('%Y-%m-%d').iloc[i] == '' else "INV - <b>"+edited_df1['INumber'].astype(str).iloc[i] + "</b> Dt - <b>" + edited_df1['IDate'].dt.strftime('%d-%m-%Y').iloc[i] + "</b>"
                 send_email(subject,edited_df1['Amount'].iloc[i],edited_df1['Party'].iloc[i],text_invoice, sender, [df10['Email'].iloc[0]], password)
                 st.write("Sent Mail")
         else:
@@ -109,8 +114,19 @@ with col4:
 st.write("")
 with col7:
     if st.button('Delete',type="primary"):
-        st.write("Deleted")
+        edited_df1=edited_df[edited_df['is_widget'] == True].reset_index()
+        if edited_df1.shape[0]:
+            workbook = load_workbook('final.xlsx')
+            sheet = workbook['Sheet1']
+            for i in range(0,edited_df1.shape[0]):
+                sheet.cell(row=edited_df1['ID'].iloc[i]+2, column=7, value=1)
+            workbook.save('final.xlsx')
+            # df_final,df2=call_list()
+            st.rerun()
+        else:
+            st.toast('Please select from the list above', icon="⚠️")
 
+st.header("ANALYSIS")
 
 col10, col11 = st.columns(2)
 with col10:
@@ -121,6 +137,13 @@ with col11:
     df2['Amount'] = df2['Amount'].astype('int')
     df22 = df2.groupby('Party')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
     st.dataframe(df22,use_container_width=True)
+
+
+
+
+
+
+
 # df20['test'] = df20['Broker'] + " : " + df20['Amount'].astype(str)
 # # Pie chart, where the slices will be ordered and plotted counter-clockwise:
 # labels = df20['Broker'].tolist()
