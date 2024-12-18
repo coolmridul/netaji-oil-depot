@@ -140,13 +140,14 @@ with col10:
     st.dataframe(df20,use_container_width=True)
 with col11:
     df2['Amount'] = df2['Amount'].astype('int')
+    df20 = df2.groupby('Company')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
+    st.dataframe(df20,use_container_width=True)
+
+col12, col13 = st.columns(2)
+with col12:
+    df2['Amount'] = df2['Amount'].astype('int')
     df22 = df2.groupby('Party')['Amount'].sum().reset_index().sort_values('Amount',ascending=False).reset_index(drop=True)
     st.dataframe(df22,use_container_width=True)
-
-
-
-
-
 
 
 # df20['test'] = df20['Broker'] + " : " + df20['Amount'].astype(str)
