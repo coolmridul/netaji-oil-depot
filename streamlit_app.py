@@ -86,6 +86,7 @@ with col5:
         edited_df2=edited_df[edited_df['is_widget'] == True].reset_index()
         edited_df2['INumber'] = edited_df2['INumber'].fillna(0)
         edited_df2['INumber'] = edited_df2['INumber'].astype(int)
+        edited_df2['Amount'] = edited_df2['Amount'].astype(int)
         if edited_df2.shape[0]:
             for j in edited_df2['Broker'].unique().tolist():
                 edited_df3 = edited_df2[edited_df2['Broker'] == j].reset_index()
@@ -98,7 +99,7 @@ with col5:
                             if edited_df3['INumber'].astype(str).iloc[l] == 'nan' or edited_df3['INumber'].astype(str).iloc[l] == '0':
                                 final_text_message += edited_df3['Party'].iloc[l] +  "  "+ str(edited_df3['Amount'].iloc[l]) +"/- \n"
                             else:
-                                final_text_message += edited_df3['Party'].iloc[l] + "  INV-"+edited_df3['INumber'].astype(str).iloc[l]+"  AMT-" +str(edited_df3['Amount'].iloc[l]) +"/-  Dt- " + edited_df3['IDate'].dt.strftime('%d-%m-%Y').iloc[l] + "\n"
+                                final_text_message += edited_df3['Party'].iloc[l] + "  INV-"+edited_df3['INumber'].astype(str).iloc[l]+"  AMT-" +str(edited_df3['Amount'].iloc[l]) +"/-  Dt- " + edited_df3['IDate'].dt.strftime('%d-%m-%Y').iloc[l] + "\n\n"
                         # print(final_text_message)
                         send_payment_whatsapp(final_text_message,df11['GroupID'].iloc[0])
                 else:
