@@ -50,6 +50,11 @@ with col6:
     option4 = st.date_input("Invoice Date",format="DD/MM/YYYY")
 with col7:
     option5 = st.text_input("Invoice Number")
+with col8:
+    option9 = st.selectbox(
+        "Company",
+    ("NODPL","NODGDM","NODKOL","SSCO")
+    )
 
 df9 = df1[df1['Broker'] == option].reset_index()
 
@@ -59,7 +64,7 @@ st.write("Number: ")
 st.code(df9['Number'].iloc[0], language="markdown")
 
 if st.button("Submit",type="primary"):
-    data = pd.DataFrame([{"ID":df_final.shape[0],"Broker":option,"Party":option1,"Amount":option2,"IDate":option4,"INumber":option5,"is_done":0}])
+    data = pd.DataFrame([{"ID":df_final['ID'].max()+1,"Broker":option,"Party":option1,"Amount":option2,"IDate":option4,"INumber":option5,"is_done":0,"Company":option9}])
     with pd.ExcelWriter('final.xlsx', engine='openpyxl', mode='a',if_sheet_exists='overlay') as writer:
         data.to_excel(writer, sheet_name='Sheet1', index=False, header=None, startrow= writer.sheets['Sheet1'].max_row)
     
@@ -71,8 +76,8 @@ st.header("PENDING LIST")
 
 df2['is_widget'] = False
 
-edited_df = st.data_editor(df2,disabled=("ID","Broker","Party","Amount","IDate","INumber","is_done","is_widget"),
-                           column_order=("ID","Broker","Party","Amount","IDate","INumber","is_widget"),use_container_width=True)
+edited_df = st.data_editor(df2,disabled=("ID","Broker","Party","Amount","IDate","INumber","is_done","Company"),
+                           column_order=("Broker","Company","Party","Amount","IDate","INumber","is_widget"),use_container_width=True)
 
 col4, col5,col7 = st.columns(3)
 
