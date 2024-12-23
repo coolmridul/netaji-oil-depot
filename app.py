@@ -3,7 +3,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-subject = "Outstanding/OverDue Payment"
+subject = "Outstanding/OverDue Payment Reminder"
 body = """<html>
 AMT- <b>{}</b> /-.
 <br>
@@ -49,7 +49,7 @@ def send_email(subject, amount1,party1,invoicedetails, sender, recipient, passwo
     print(msg)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
        smtp_server.login(sender, password)
-       smtp_server.sendmail(sender, recipient + ['rakesh_agarwa@hotmail.com'], msg.as_bytes())
+       smtp_server.sendmail(sender, recipient + ['mridulagarwal8@gmail.com'], msg.as_bytes())
 
 
 # send_email(subject, body, sender, recipients, password)
