@@ -46,7 +46,6 @@ def send_email(subject, amount1,party1,invoicedetails, sender, recipient, passwo
     msg['From'] = sender
     msg['To'] = ', '.join(recipient)
     msg['cc'] = 'rakesh_agarwa@hotmail.com'
-    print(msg)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
        smtp_server.login(sender, password)
        smtp_server.sendmail(sender, recipient + ['mridulagarwal8@gmail.com'], msg.as_bytes())
