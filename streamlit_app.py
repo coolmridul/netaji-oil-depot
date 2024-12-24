@@ -76,20 +76,10 @@ st.header("PENDING LIST")
 
 df2['is_widget'] = False
 
-col20,col22 =st.columns(2)
-
-with col20:
-    if st.button('Select All',type="primary"):
-            df2['is_widget'] = True
-
-with col22:
-    if st.button('Unselect All',type="primary"):
-            df2['is_widget'] = False
-
 edited_df = st.data_editor(df2,disabled=("ID","Broker","Party","Amount","IDate","INumber","is_done","Company"),
                            column_order=("Broker","Company","Party","Amount","IDate","INumber","is_widget"),use_container_width=True)
 
-col4, col5,col7 = st.columns(3)
+col4, col5,col7,col14,col15 = st.columns(5)
 
 with col5:
     if st.button("Send SMS",type="primary"):
@@ -132,7 +122,7 @@ with col4:
                     st.toast('Email Sent' , icon="✅")
         else:
             st.toast('Please select from the list' , icon="⚠️")
-st.write("")
+
 with col7:
     if st.button('Delete',type="primary"):
         edited_df1=edited_df[edited_df['is_widget'] == True].reset_index()
@@ -147,13 +137,56 @@ with col7:
         else:
             st.toast('Please select from the list above', icon="⚠️")
 
+
+
+with col14:
+    if st.button('SEND SMS ALL',type="primary"):
+        edited_df5=edited_df.copy()
+        edited_df5['INumber'] = edited_df5['INumber'].fillna(0)
+        edited_df5['INumber'] = edited_df5['INumber'].astype(int)
+        edited_df5['Amount'] = edited_df5['Amount'].astype(int)
+        if edited_df5.shape[0]:
+            for j in edited_df5['Broker'].unique().tolist():
+                edited_df3 = edited_df5[edited_df5['Broker'] == j].reset_index()
+                df11 = df1[df1['Broker'] == j].reset_index()
+                df11['GroupID'] = df11['GroupID'].fillna('')
+                if df11['GroupID'].iloc[0] != '':
+                    if edited_df3.shape[0]:
+                        final_text_message = 'PLEASE CLEAR THE DUES \n\n'
+                        for l in range(0,edited_df3.shape[0]):
+                            if edited_df3['INumber'].astype(str).iloc[l] == 'nan' or edited_df3['INumber'].astype(str).iloc[l] == '0':
+                                final_text_message += edited_df3['Company'].astype(str).iloc[l]+ " - " + edited_df3['Party'].iloc[l] +  "  "+ str(edited_df3['Amount'].iloc[l]) +"/- \n"
+                            else:
+                                final_text_message += edited_df3['Company'].astype(str).iloc[l]+ " - " + edited_df3['Party'].iloc[l] + "  INV-"+edited_df3['INumber'].astype(str).iloc[l]+"  AMT-" +str(edited_df3['Amount'].iloc[l]) +"/-  Dt- " + edited_df3['IDate'].dt.strftime('%d-%m-%Y').iloc[l] + "\n\n"
+                        
+                        send_payment_whatsapp(final_text_message,df11['GroupID'].iloc[0])
+                        st.toast('Whatsapp Message Sent to '+j , icon="✅")
+                else:
+                    st.toast('Whatsapp Group not available for '+j, icon="⚠️")
+
+
+with col15:
+    if st.button('SEND EMAIL ALL',type="primary"):
+        edited_df6=edited_df.copy()
+        df1['Email'] = df1['Email'].fillna('')
+        if edited_df6.shape[0]:
+            for i in range(0,edited_df6.shape[0]):
+                df10 = df1[df1['Broker'] == edited_df6['Broker'].iloc[i]].reset_index()
+                text_invoice = "" if edited_df6['IDate'].dt.strftime('%Y-%m-%d').iloc[i] == '' else "INV - <b>"+edited_df6['INumber'].astype(str).iloc[i] + "</b> Dt - <b>" + edited_df6['IDate'].dt.strftime('%d-%m-%Y').iloc[i] + "</b>"
+                if df10['Email'].iloc[0] == '' or df10['Email'].iloc[0] == 'nan':
+                     st.toast('Email Not Found' , icon="❌")
+                else:
+                    send_email(subject,edited_df6['Amount'].iloc[i],edited_df6['Party'].iloc[i],text_invoice, sender, [df10['Email'].iloc[0]], password)
+                    st.toast('Email Sent to '+ edited_df6['Broker'].iloc[i], icon="✅")
+
+
 st.header("ANALYSIS")
 
 @st.cache_data
 def convert_df(df):
     return df.to_csv().encode("utf-8")
 
-csv = convert_df(df2)
+csv = convert_df(df_final)
 
 st.download_button(
     label="Download data as CSV",
